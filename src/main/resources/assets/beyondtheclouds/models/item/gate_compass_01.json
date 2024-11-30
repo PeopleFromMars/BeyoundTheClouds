@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "beyondtheclouds:item/gate_compass_01"
+  }
+}
