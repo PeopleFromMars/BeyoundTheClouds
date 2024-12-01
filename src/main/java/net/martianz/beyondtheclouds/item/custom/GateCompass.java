@@ -39,7 +39,7 @@ public class GateCompass extends CompassItem {
                     BlockPos validHighest = new BlockPos(randomPos.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING, randomPos.getX(), randomPos.getY()), randomPos.getZ());
                     BlockState randomState = level.getBlockState(validHighest);
                     if(validHighest.getY() > highestWithin.getY()){
-                        highestWithin = randomPos;;
+                        highestWithin = randomPos;;;
                     }
                 }
                 if(highestWithin==origin){
