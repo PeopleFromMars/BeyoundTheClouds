@@ -28,10 +28,10 @@ public class GateCompass extends CompassItem {
         if(!level.isClientSide){
             ItemStack thisStack = player.getItemInHand(interactionHand);
             if(thisStack.is(Itemz.GATE_COMPASS.get())){
-                BlockPos origin = new BlockPos(player.blockPosition().getX(), 0, player.blockPosition().getZ());
+                BlockPos origin = new BlockPos(player.blockPosition().getX(), -63, player.blockPosition().getZ());
                 BlockPos highestWithin = origin;
 
-                for (BlockPos choice : BlockPos.betweenClosed(new BlockPos(origin.getX()-1000, 0, origin.getZ()-1000), new BlockPos(origin.getX()+1000, 0, origin.getZ()+1000))) {
+                for (BlockPos choice : BlockPos.betweenClosed(new BlockPos(origin.getX()-1000, -63, origin.getZ()-1000), new BlockPos(origin.getX()+1000, -63, origin.getZ()+1000))) {
                     int choiceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, choice.getX(), choice.getZ());
                     if(choiceY >= highestWithin.getY()){
                         highestWithin = new BlockPos(choice.getX(), choiceY, choice.getZ());
@@ -43,6 +43,12 @@ public class GateCompass extends CompassItem {
                 }else{
                     thisStack.set(DataComponentz.COORDINATE_COMPONENT, highestWithin);
                     player.displayClientMessage(Component.translatable("clientmsg."+BeyondTheClouds.MODID +".entry_point_locating.success").withStyle(ChatFormatting.GREEN), true);
+                }
+
+                //TODO Debug feature, remove later
+                BlockPos located = thisStack.get(DataComponentz.COORDINATE_COMPONENT);
+                if(player.isShiftKeyDown() && located != null && player.isCreative()){
+                    player.teleportTo(located.getX(), located.getY(), located.getZ());
                 }
             }
         }
