@@ -1,5 +1,8 @@
 {
   "creativetab.beyondtheclouds.cloudrealm_tab": "Beyond The Clouds: Cloud Realm",
-  "tooltip.gate_compass.target": "Gate Location",
+  "tooltip.beyondtheclouds.gate_compass.target": "Entry Point Location",
+  "tooltip.beyondtheclouds.gate_compass.info": "Use Item to Locate Nearest Entry Point",
+  "clientmsg.beyondtheclouds.entry_point_locating.success": "Locating Entry Point Successful",
+  "clientmsg.beyondtheclouds.entry_point_locating.fail": "Locating Entry Point Failed",
   "item.beyondtheclouds.gate_compass": "Gate Compass"
 }
