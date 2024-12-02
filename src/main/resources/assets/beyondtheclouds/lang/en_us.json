@@ -4,5 +4,6 @@
   "tooltip.beyondtheclouds.gate_compass.info": "Use Item to Locate Nearest Entry Point",
   "clientmsg.beyondtheclouds.entry_point_locating.success": "Locating Entry Point Successful",
   "clientmsg.beyondtheclouds.entry_point_locating.fail": "Locating Entry Point Failed",
-  "item.beyondtheclouds.gate_compass": "Gate Compass"
+  "item.beyondtheclouds.gate_compass": "Gate Compass",
+  "block.beyondtheclouds.aeroforge": "AeroForge"
 }

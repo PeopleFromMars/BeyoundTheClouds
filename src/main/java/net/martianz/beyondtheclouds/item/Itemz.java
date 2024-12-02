@@ -1,11 +1,10 @@
 package net.martianz.beyondtheclouds.item;
 
 import net.martianz.beyondtheclouds.BeyondTheClouds;
+import net.martianz.beyondtheclouds.block.Blockz;
 import net.martianz.beyondtheclouds.item.custom.GateCompass;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.food.FoodProperties;
-import net.minecraft.world.item.CompassItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,7 +25,8 @@ public class Itemz {
             () -> CreativeModeTab.builder().icon(() -> new ItemStack(GATE_COMPASS.get()))
                     .title(Component.translatable("creativetab.beyondtheclouds.cloudrealm_tab"))
                     .displayItems((itemDisplayParamaters, output) -> {
-                        output.accept(GATE_COMPASS);
+                        output.accept(GATE_COMPASS.get());
+                        output.accept(Blockz.AEROFORGE.get());
                     }).build());
 
     public static void register(IEventBus eventBus){
