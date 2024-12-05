@@ -19,6 +19,9 @@ public class Itemz {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_TAB = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, BeyondTheClouds.MODID);
 
     public static final DeferredItem<Item> GATE_COMPASS = ITEMZ.registerItem("gate_compass", GateCompass::new, new Item.Properties());
+    public static final DeferredItem<Item> AEROFORGE_EFFECT_LAYER_I = ITEMZ.registerSimpleItem("aeroforge_effect_one");
+    public static final DeferredItem<Item> AEROFORGE_EFFECT_LAYER_II = ITEMZ.registerSimpleItem("aeroforge_effect_two");
+    public static final DeferredItem<Item> AEROFORGE_EFFECT_LAYER_BASE = ITEMZ.registerSimpleItem("aeroforge_effect_base");
 
 
     public static final Supplier<CreativeModeTab> CLOUDREALM_TAB = CREATIVE_TAB.register("cloud_realm_tab",
