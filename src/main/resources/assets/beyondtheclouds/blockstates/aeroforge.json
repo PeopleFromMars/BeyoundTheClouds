@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "beyondtheclouds:block/aeroforge",
+      "y": 270
+    },
+    "facing=north": {
+      "model": "beyondtheclouds:block/aeroforge",
+      "y": 180
+    },
+    "facing=south": {
+      "model": "beyondtheclouds:block/aeroforge"
+    },
+    "facing=west": {
+      "model": "beyondtheclouds:block/aeroforge",
+      "y": 90
+    }
+  }
+}

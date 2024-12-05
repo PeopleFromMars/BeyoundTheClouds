@@ -9,6 +9,8 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -20,10 +22,11 @@ public class Blockz {
 
     public static final DeferredBlock<AeroForge> AEROFORGE = registerWithItem("aeroforge", registryName -> new AeroForge(BlockBehaviour.Properties.of()
             .setId(ResourceKey.create(Registries.BLOCK, registryName))
-            .destroyTime(2.0f)
-            .explosionResistance(10.0f)
+            .mapColor(MapColor.METAL)
+            .requiresCorrectToolForDrops()
+            .strength(5.0F, 1200.0F)
             .sound(SoundType.ANVIL)
-            .lightLevel(state -> 7)
+            .pushReaction(PushReaction.BLOCK)
     ));
 
     public static <B extends Block> DeferredBlock<B> registerWithItem(String name, Function<ResourceLocation, ? extends B> func){
