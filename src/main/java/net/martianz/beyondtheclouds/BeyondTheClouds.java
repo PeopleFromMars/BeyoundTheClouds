@@ -2,9 +2,11 @@ package net.martianz.beyondtheclouds;
 
 import net.martianz.beyondtheclouds.block.Blockz;
 import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
+import net.martianz.beyondtheclouds.block.entity.custom.AeroforgeBER;
 import net.martianz.beyondtheclouds.component.DataComponentz;
 import net.martianz.beyondtheclouds.item.Itemz;
 import net.martianz.beyondtheclouds.util.ItemPropertiez;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -63,5 +65,11 @@ public class BeyondTheClouds {
             ItemPropertiez.addItemProperties();
         }
 
+        @SubscribeEvent
+        public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
+            event.registerBlockEntityRenderer(BlockEntitiez.AEROFORGE_BE.get(), AeroforgeBER::new);
+        }
     }
+
+
 }

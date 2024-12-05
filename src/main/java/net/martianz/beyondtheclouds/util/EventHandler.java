@@ -2,9 +2,10 @@ package net.martianz.beyondtheclouds.util;
 
 import net.martianz.beyondtheclouds.BeyondTheClouds;
 import net.martianz.beyondtheclouds.block.Blockz;
+import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
+import net.martianz.beyondtheclouds.block.entity.custom.AeroforgeBER;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -16,16 +17,16 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
-import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.event.entity.player.AttackEntityEvent;
 
 @EventBusSubscriber(modid = BeyondTheClouds.MODID)
 public class EventHandler {
 
     @SubscribeEvent
-    public static void onMaceFalls(AttackEntityEvent event){
+    public static void onMaceAttack(AttackEntityEvent event){
         Level level = event.getEntity().level();
         if(!level.isClientSide){
             Entity target = event.getTarget();
@@ -33,7 +34,7 @@ public class EventHandler {
             ItemStack handStack = attacker.getWeaponItem();
 
             if(target instanceof Sheep sheep && attacker instanceof Player player && handStack.is(Items.MACE)){
-                if(player.fallDistance > 1.5F && !player.isFallFlying()){
+                if(player.fallDistance > 1.5F && !player.isFallFlying()){ //checking if attack with mace is smash attack
                     BlockPos origin = sheep.blockPosition();
                     if(level.getBlockState(origin).getBlock() == Blocks.BLUE_CARPET){
                         //Initiate ritual I.
@@ -73,7 +74,7 @@ public class EventHandler {
                                 level.addFreshEntity(lightningbolt);
                             }
 
-                            sheep.setPos(sheep.blockPosition().getX(), -1000, sheep.blockPosition().getZ());
+                            sheep.setPos(sheep.blockPosition().getX(), -1000, sheep.blockPosition().getZ()); //Sheep removal since its a sacrifice
                         }
                     }
                 }
@@ -81,4 +82,5 @@ public class EventHandler {
 
         }
     }
+
 }

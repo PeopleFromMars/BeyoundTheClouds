@@ -26,6 +26,7 @@ public class Blockz {
             .requiresCorrectToolForDrops()
             .strength(5.0F, 1200.0F)
             .sound(SoundType.ANVIL)
+            .noOcclusion()
             .pushReaction(PushReaction.BLOCK)
     ));
 

@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
+import net.minecraft.world.level.redstone.Orientation;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -104,5 +105,13 @@ public class AeroForge extends FallingBlock implements EntityBlock {
     @Override
     public int getDustColor(BlockState state, BlockGetter reader, BlockPos pos) {
         return state.getMapColor(reader, pos).col;
+    }
+
+    @Override
+    protected void neighborChanged(BlockState state, Level level, BlockPos pos, Block block, @Nullable Orientation orientation, boolean bool) {
+        if(level.getBlockEntity(pos) instanceof AeroforgeBlockEntity forge && !level.isClientSide){
+            forge.checkAltarValidity(level, pos);
+        }
+        super.neighborChanged(state, level, pos, block, orientation, bool);
     }
 }

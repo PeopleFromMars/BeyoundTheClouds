@@ -1,5 +1,5 @@
 {
-	"credit": "Made with Blockbench",
+	"render_type": "minecraft:cutout_mipped",
 	"textures": {
 		"0": "beyondtheclouds:block/aeroforge_deco",
 		"1": "minecraft:block/anvil_top",
