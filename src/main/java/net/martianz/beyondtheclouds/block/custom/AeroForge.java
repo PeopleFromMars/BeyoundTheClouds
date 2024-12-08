@@ -1,23 +1,33 @@
 package net.martianz.beyondtheclouds.block.custom;
 
 import com.mojang.serialization.MapCodec;
+import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
 import net.martianz.beyondtheclouds.block.entity.custom.AeroforgeBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
 import net.minecraft.world.level.block.*;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.level.pathfinder.PathComputationType;
 import net.minecraft.world.level.redstone.Orientation;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -113,5 +123,32 @@ public class AeroForge extends FallingBlock implements EntityBlock {
             forge.checkAltarValidity(level, pos);
         }
         super.neighborChanged(state, level, pos, block, orientation, bool);
+    }
+
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
+        return blockEntityType == BlockEntitiez.AEROFORGE_BE.get() ? (BlockEntityTicker<T>) AeroforgeBlockEntity::tick : null;
+    }
+
+    @Override
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult hitResult) {
+        if(level.getBlockEntity(pos) instanceof AeroforgeBlockEntity forge && !level.isClientSide){
+            if(forge.checkAltarValidity(level, pos) && !player.getItemInHand(interactionHand).is(Blocks.AIR.asItem())){
+                if(forge.addItem(stack.getItem())){
+                    if(!player.isCreative()) stack.shrink(1);
+                    return InteractionResult.SUCCESS_SERVER;
+                }
+            }
+
+        }
+        return InteractionResult.FAIL;
+    }
+
+    @Override
+    public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
+        if(level.getBlockEntity(pos) instanceof AeroforgeBlockEntity forge){
+            forge.dropContents();
+        }
+        return super.playerWillDestroy(level, pos, state, player);
     }
 }

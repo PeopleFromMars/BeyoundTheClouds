@@ -3,20 +3,32 @@ package net.martianz.beyondtheclouds.block.entity.custom;
 import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.NonNullList;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.Container;
+import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-public class AeroforgeBlockEntity extends BlockEntity {
+public class AeroforgeBlockEntity extends BlockEntity implements Container {
     public Boolean hasValidAltar = false;
     public int altarLevel = 0;
+    private final NonNullList<ItemStack> items = NonNullList.withSize(8, ItemStack.EMPTY);
+
+    public int itemSelector = 8;
+    float rotator1 = 0.0f;
+    float rotator2 = ((float)Math.PI*2);
 
     public AeroforgeBlockEntity(BlockPos pos, BlockState blockState) {
         super(BlockEntitiez.AEROFORGE_BE.get(), pos, blockState);
@@ -143,6 +155,7 @@ public class AeroforgeBlockEntity extends BlockEntity {
         super.loadAdditional(tag, registries);
         this.hasValidAltar = tag.getBoolean("hasValidAltar");
         this.altarLevel = tag.getInt("altarLevel");
+        ContainerHelper.loadAllItems(tag, this.items, registries);
     }
 
     @Override
@@ -150,6 +163,7 @@ public class AeroforgeBlockEntity extends BlockEntity {
         super.saveAdditional(tag, registries);
         tag.putBoolean("hasValidAltar", this.hasValidAltar);
         tag.putInt("altarLevel", this.altarLevel);
+        ContainerHelper.saveAllItems(tag, this.items, registries);
     }
 
     @Override
@@ -164,12 +178,92 @@ public class AeroforgeBlockEntity extends BlockEntity {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
-    // Optionally: Run some custom logic when the packet is received.
-    // The super/default implementation forwards to #loadAdditional.
     @Override
     public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
         super.onDataPacket(connection, packet, registries);
         this.hasValidAltar = packet.getTag().getBoolean("hasValidAltar");
         this.altarLevel = packet.getTag().getInt("altarLevel");
+        ContainerHelper.loadAllItems(packet.getTag(), this.items, registries);
+    }
+
+    public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
+        if(blockEntity instanceof AeroforgeBlockEntity aeroforge){
+
+
+
+
+            //rendering shenanigan
+            aeroforge.rotator1+=0.01f;
+            if(aeroforge.rotator1 > (2 * Math.PI)) aeroforge.rotator1 = 0;
+            aeroforge.rotator2-=0.01f;
+            if(aeroforge.rotator2 < 0.0f) aeroforge.rotator2 = ((float)Math.PI*2);
+        }
+    }
+
+    @Override
+    public int getContainerSize() {
+        return this.altarLevel*4;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return this.items.stream().allMatch(ItemStack::isEmpty);
+    }
+
+    @Override
+    public ItemStack getItem(int slot) {
+        return this.items.get(slot);
+    }
+
+    @Override
+    public ItemStack removeItem(int slot, int amount) {
+        ItemStack stack = ContainerHelper.removeItem(this.items, slot, amount);
+        this.setChanged();
+        return stack;
+    }
+
+    @Override
+    public ItemStack removeItemNoUpdate(int slot) {
+        ItemStack stack = ContainerHelper.takeItem(this.items, slot);
+        this.setChanged();
+        return stack;
+    }
+
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+        stack.limitSize(this.getMaxStackSize(stack));
+        this.items.set(slot, stack);
+        this.setChanged();
+    }
+
+    public boolean addItem(Item item){
+        int firstFreeSlot = this.getContainerSize()+10;
+        for (int i = this.getContainerSize()-1; i >= 0; i--) {
+            firstFreeSlot = this.items.get(i).isEmpty() ? i : firstFreeSlot;
+        }
+        if(firstFreeSlot < this.getContainerSize()){
+            this.setItem(firstFreeSlot, new ItemStack(item));
+            System.out.println("added to " + firstFreeSlot);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean stillValid(Player player) {
+        return true;
+    }
+
+    @Override
+    public void clearContent() {
+        items.clear();
+        this.setChanged();
+    }
+
+    public void dropContents(){
+        for (ItemStack stack : this.items) {
+            this.level.addFreshEntity(new ItemEntity(this.level, this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ(), stack));
+        }
+        this.clearContent();
     }
 }
