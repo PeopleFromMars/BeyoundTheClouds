@@ -22,10 +22,13 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
 public class AeroforgeBlockEntity extends BlockEntity implements Container {
+    //stored values
     public Boolean hasValidAltar = false;
     public int altarLevel = 0;
     private final NonNullList<ItemStack> items = NonNullList.withSize(8, ItemStack.EMPTY);
 
+
+    //unstored values for some reason
     public int itemSelector = 8;
     float rotator1 = 0.0f;
     float rotator2 = ((float)Math.PI*2);
@@ -188,7 +191,6 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
 
     public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
         if(blockEntity instanceof AeroforgeBlockEntity aeroforge){
-
 
 
 

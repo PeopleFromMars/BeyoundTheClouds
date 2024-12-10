@@ -1,0 +1,19 @@
+{
+  "type": "beyondtheclouds:aeroforge_i",
+  "ingredient1": {
+    "item": "minecraft:compass"
+  },
+  "ingredient2": {
+    "item": "minecraft:gold_ingot"
+  },
+  "ingredient3": {
+    "item": "minecraft:feather"
+  },
+  "ingredient4": {
+    "item": "minecraft:echo_shard"
+  },
+  "result": {
+    "count": 1,
+    "id": "beyondtheclouds:gate_compass"
+  }
+}

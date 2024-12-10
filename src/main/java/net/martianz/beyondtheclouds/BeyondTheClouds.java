@@ -5,6 +5,7 @@ import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
 import net.martianz.beyondtheclouds.block.entity.custom.AeroforgeBER;
 import net.martianz.beyondtheclouds.component.DataComponentz;
 import net.martianz.beyondtheclouds.item.Itemz;
+import net.martianz.beyondtheclouds.recipe.Recipez;
 import net.martianz.beyondtheclouds.util.ItemPropertiez;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import org.slf4j.Logger;
@@ -37,6 +38,7 @@ public class BeyondTheClouds {
         Itemz.register(modEventBus);
         Blockz.register(modEventBus);
         BlockEntitiez.register(modEventBus);
+        Recipez.register(modEventBus);
 
         DataComponentz.register(modEventBus);
 
