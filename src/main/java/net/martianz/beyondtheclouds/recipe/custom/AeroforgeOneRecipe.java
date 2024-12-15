@@ -24,23 +24,23 @@ public class AeroforgeOneRecipe implements Recipe<AeroforgeInput> {
     }
 
     public Ingredient getInputItem1(){
-        return this.inputItem1;
+        return inputItem1;
     }
 
     public Ingredient getInputItem2(){
-        return this.inputItem2;
+        return inputItem2;
     }
 
     public Ingredient getInputItem3(){
-        return this.inputItem3;
+        return inputItem3;
     }
 
     public Ingredient getInputItem4(){
-        return this.inputItem4;
+        return inputItem4;
     }
 
     public ItemStack getResult(){
-        return this.result;
+        return result;
     }
 
     @Override

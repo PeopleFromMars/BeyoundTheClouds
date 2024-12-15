@@ -257,7 +257,6 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
         }
         if(firstFreeSlot < this.getContainerSize()){
             this.setItem(firstFreeSlot, new ItemStack(item));
-            System.out.println("added to " + firstFreeSlot);
             return true;
         }
         return false;
@@ -285,26 +284,9 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
         RecipeManager recipes = serverLevel.recipeAccess();
         AeroforgeInput input = new AeroforgeInput(items.get(0), items.get(1), items.get(2), items.get(3));
         Optional<RecipeHolder<AeroforgeOneRecipe>> optional = recipes.getRecipeFor(Recipez.AEROFORGE_I_RECIPE_TYPE.get(), input, serverLevel);
-        System.out.println("we tried crafting " + input);
-        optional.map(RecipeHolder::value).ifPresentOrElse(recipe ->{
-            System.out.println("success1");
-        }, () ->{
-            System.out.println("fail1");
+        optional.map(RecipeHolder::value).ifPresent(recipe ->{
+            this.level.addFreshEntity(new ItemEntity(this.level, this.getBlockPos().getX(), this.getBlockPos().above().getY(), this.getBlockPos().getZ(), recipe.assemble(input, serverLevel.registryAccess())));
+            this.clearContent();
         });
-
-        Optional<RecipeHolder<?>> optional2 = recipes.byKey(
-                ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(BeyondTheClouds.MODID,"gate_compass"))
-        );
-        optional.map(RecipeHolder::value).ifPresentOrElse(recipe ->{
-            System.out.println("success2");
-        }, () ->{
-            System.out.println("fail2");
-        });
-
-        System.out.println(recipes.getRecipes());
-                //.ifPresent(recipe -> {
-        //            ItemStack result = recipe.getResult();
-        //            System.out.println("with the result of " + result);
-        //        });
     }
 }
