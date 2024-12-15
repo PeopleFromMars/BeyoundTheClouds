@@ -9,10 +9,10 @@ public record AeroforgeInput(ItemStack stack1, ItemStack stack2, ItemStack stack
     public ItemStack getItem(int slot) {
         ItemStack stack = null;
         switch (slot){
-            case 1: stack = this.stack1; break;
-            case 2: stack = this.stack1; break;
-            case 3: stack = this.stack1; break;
-            case 4: stack = this.stack1; break;
+            case 0: stack = this.stack1; break;
+            case 1: stack = this.stack2; break;
+            case 2: stack = this.stack3; break;
+            case 3: stack = this.stack4; break;
         }
         if(stack != null){
             return stack;

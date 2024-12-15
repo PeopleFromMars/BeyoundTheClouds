@@ -22,13 +22,13 @@ public class Recipez {
     public static final DeferredRegister<RecipeSerializer<?>> RECIPE_SERIALIZERZ = DeferredRegister.create(Registries.RECIPE_SERIALIZER, BeyondTheClouds.MODID);
 
     public static final Supplier<RecipeBookCategory> AEROFORGE_I_CATEGORY = RECIPE_BOOK_CATEGORIES.register("aeroforge_1", RecipeBookCategory::new);
-    public static final Supplier<RecipeType<AeroforgeOneRecipe>> AEROFORGE_I_RECIPE_TYPE = RECIPE_TYPEZ.register("aeroforge_i", () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(BeyondTheClouds.MODID, "aeroforge_i")));
     public static final Supplier<RecipeSerializer<AeroforgeOneRecipe>> AEROFORGE_I_SERIALIZER = RECIPE_SERIALIZERZ.register("aeroforge_i", AeroforgeOneRecipeSerializer::new);
+    public static final Supplier<RecipeType<AeroforgeOneRecipe>> AEROFORGE_I_RECIPE_TYPE = RECIPE_TYPEZ.register("aeroforge_i", () -> RecipeType.simple(ResourceLocation.fromNamespaceAndPath(BeyondTheClouds.MODID, "aeroforge_i")));
 
 
     public static void register(IEventBus eventBus){
         RECIPE_BOOK_CATEGORIES.register(eventBus);
-        RECIPE_TYPEZ.register(eventBus);
         RECIPE_SERIALIZERZ.register(eventBus);
+        RECIPE_TYPEZ.register(eventBus);
     }
 }

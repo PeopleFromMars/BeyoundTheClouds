@@ -5,6 +5,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
+import org.jetbrains.annotations.NotNull;
 
 public class AeroforgeOneRecipe implements Recipe<AeroforgeInput> {
 
@@ -73,7 +74,7 @@ public class AeroforgeOneRecipe implements Recipe<AeroforgeInput> {
     }
 
     @Override
-    public RecipeSerializer<? extends Recipe<AeroforgeInput>> getSerializer() {
+    public @NotNull RecipeSerializer<? extends Recipe<AeroforgeInput>> getSerializer() {
         return Recipez.AEROFORGE_I_SERIALIZER.get();
     }
 }

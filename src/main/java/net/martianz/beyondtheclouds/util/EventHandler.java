@@ -85,9 +85,4 @@ public class EventHandler {
         }
     }
 
-    @SubscribeEvent
-    public static void register(final RegisterPayloadHandlersEvent event) {
-        final PayloadRegistrar registrar = event.registrar("1");
-    }
-
 }

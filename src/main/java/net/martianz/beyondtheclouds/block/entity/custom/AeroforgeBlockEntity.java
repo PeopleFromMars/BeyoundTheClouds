@@ -1,25 +1,37 @@
 package net.martianz.beyondtheclouds.block.entity.custom;
 
+import net.martianz.beyondtheclouds.BeyondTheClouds;
 import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
+import net.martianz.beyondtheclouds.recipe.Recipez;
+import net.martianz.beyondtheclouds.recipe.custom.AeroforgeInput;
+import net.martianz.beyondtheclouds.recipe.custom.AeroforgeOneRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeManager;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+
+import java.util.Optional;
 
 public class AeroforgeBlockEntity extends BlockEntity implements Container {
     //stored values
@@ -267,5 +279,32 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
             this.level.addFreshEntity(new ItemEntity(this.level, this.getBlockPos().getX(), this.getBlockPos().getY(), this.getBlockPos().getZ(), stack));
         }
         this.clearContent();
+    }
+
+    public void tryCraft(ServerLevel serverLevel){
+        RecipeManager recipes = serverLevel.recipeAccess();
+        AeroforgeInput input = new AeroforgeInput(items.get(0), items.get(1), items.get(2), items.get(3));
+        Optional<RecipeHolder<AeroforgeOneRecipe>> optional = recipes.getRecipeFor(Recipez.AEROFORGE_I_RECIPE_TYPE.get(), input, serverLevel);
+        System.out.println("we tried crafting " + input);
+        optional.map(RecipeHolder::value).ifPresentOrElse(recipe ->{
+            System.out.println("success1");
+        }, () ->{
+            System.out.println("fail1");
+        });
+
+        Optional<RecipeHolder<?>> optional2 = recipes.byKey(
+                ResourceKey.create(Registries.RECIPE, ResourceLocation.fromNamespaceAndPath(BeyondTheClouds.MODID,"gate_compass"))
+        );
+        optional.map(RecipeHolder::value).ifPresentOrElse(recipe ->{
+            System.out.println("success2");
+        }, () ->{
+            System.out.println("fail2");
+        });
+
+        System.out.println(recipes.getRecipes());
+                //.ifPresent(recipe -> {
+        //            ItemStack result = recipe.getResult();
+        //            System.out.println("with the result of " + result);
+        //        });
     }
 }
