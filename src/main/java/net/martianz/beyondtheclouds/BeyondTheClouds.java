@@ -5,9 +5,12 @@ import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
 import net.martianz.beyondtheclouds.block.entity.custom.AeroforgeBER;
 import net.martianz.beyondtheclouds.component.DataComponentz;
 import net.martianz.beyondtheclouds.item.Itemz;
+import net.martianz.beyondtheclouds.network.Networkingz;
 import net.martianz.beyondtheclouds.recipe.Recipez;
 import net.martianz.beyondtheclouds.util.ItemPropertiez;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -33,6 +36,7 @@ public class BeyondTheClouds {
 
     public BeyondTheClouds(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
+        modEventBus.addListener(Networkingz::registerPayloads);
         NeoForge.EVENT_BUS.register(this);
 
         Itemz.register(modEventBus);
@@ -72,6 +76,8 @@ public class BeyondTheClouds {
             event.registerBlockEntityRenderer(BlockEntitiez.AEROFORGE_BE.get(), AeroforgeBER::new);
         }
     }
+
+
 
 
 }

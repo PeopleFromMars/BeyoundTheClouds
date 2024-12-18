@@ -1,5 +1,6 @@
 package net.martianz.beyondtheclouds.block.entity.custom;
 
+import io.netty.buffer.ByteBuf;
 import net.martianz.beyondtheclouds.BeyondTheClouds;
 import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
 import net.martianz.beyondtheclouds.recipe.Recipez;
@@ -8,13 +9,14 @@ import net.martianz.beyondtheclouds.recipe.custom.AeroforgeOneRecipe;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
@@ -30,6 +32,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.neoforged.neoforge.network.PacketDistributor;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -38,12 +42,51 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
     public Boolean hasValidAltar = false;
     public int altarLevel = 0;
     private final NonNullList<ItemStack> items = NonNullList.withSize(8, ItemStack.EMPTY);
+    public Boolean standby = true;
+
+    //unstored but packet-synced to client
+    public int craftingTimer = 0;
+    public int itemSelector = 0;
+
+    //maths
+    public static final int RECIPE_TIME_TICKS = 300; //l
+    private static final float C = (float) 4 /RECIPE_TIME_TICKS;
 
 
     //unstored values for some reason
-    public int itemSelector = 8;
     float rotator1 = 0.0f;
     float rotator2 = ((float)Math.PI*2);
+    ItemStack result = ItemStack.EMPTY;
+
+    public record AeroforgeData(int x, int y, int z, Boolean standby, int craftingTimer, int itemSelector, Boolean shouldCleanse) implements CustomPacketPayload{
+        public static final CustomPacketPayload.Type<AeroforgeData> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(BeyondTheClouds.MODID, "aeroforge_data"));
+        public static final StreamCodec<ByteBuf, AeroforgeData> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.VAR_INT,
+                AeroforgeData::x,
+                ByteBufCodecs.VAR_INT,
+                AeroforgeData::y,
+                ByteBufCodecs.VAR_INT,
+                AeroforgeData::z,
+                ByteBufCodecs.BOOL,
+                AeroforgeData::standby,
+                ByteBufCodecs.VAR_INT,
+                AeroforgeData::craftingTimer,
+                ByteBufCodecs.VAR_INT,
+                AeroforgeData::itemSelector,
+                ByteBufCodecs.BOOL,
+                AeroforgeData::shouldCleanse,
+                AeroforgeData::new
+        );
+
+        @Override
+        public @NotNull Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+
+        public static AeroforgeData getDataFromForge(AeroforgeBlockEntity forge, boolean shouldCleanse){
+            return new AeroforgeData(forge.getBlockPos().getX(), forge.getBlockPos().getY(), forge.getBlockPos().getZ(), forge.standby, forge.craftingTimer, forge.itemSelector, shouldCleanse);
+        }
+    }
 
     public AeroforgeBlockEntity(BlockPos pos, BlockState blockState) {
         super(BlockEntitiez.AEROFORGE_BE.get(), pos, blockState);
@@ -171,6 +214,7 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
         this.hasValidAltar = tag.getBoolean("hasValidAltar");
         this.altarLevel = tag.getInt("altarLevel");
         ContainerHelper.loadAllItems(tag, this.items, registries);
+        this.standby = tag.getBoolean("standby");
     }
 
     @Override
@@ -179,6 +223,7 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
         tag.putBoolean("hasValidAltar", this.hasValidAltar);
         tag.putInt("altarLevel", this.altarLevel);
         ContainerHelper.saveAllItems(tag, this.items, registries);
+        tag.putBoolean("standby", this.standby);
     }
 
     @Override
@@ -196,15 +241,28 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
     @Override
     public void onDataPacket(Connection connection, ClientboundBlockEntityDataPacket packet, HolderLookup.Provider registries) {
         super.onDataPacket(connection, packet, registries);
-        this.hasValidAltar = packet.getTag().getBoolean("hasValidAltar");
-        this.altarLevel = packet.getTag().getInt("altarLevel");
-        ContainerHelper.loadAllItems(packet.getTag(), this.items, registries);
+        this.saveAdditional(packet.getTag(), registries);
     }
 
     public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
         if(blockEntity instanceof AeroforgeBlockEntity aeroforge){
+            //Crafting sequence
 
+            if(!aeroforge.standby){
+                float n = (float) RECIPE_TIME_TICKS /4;
+                aeroforge.itemSelector = Math.round((float)(C*(n*Math.floor(aeroforge.craftingTimer/n))));
+                aeroforge.setChanged();
+                aeroforge.updateForgeOnClient(aeroforge, level, false);
 
+                if(aeroforge.craftingTimer >= RECIPE_TIME_TICKS){
+                    aeroforge.craftingTimer = 0;
+                    aeroforge.itemSelector = 0;
+                    aeroforge.finishCraftingProcedure();
+                    }else{
+                    aeroforge.craftingTimer++;
+                }
+
+            }
 
             //rendering shenanigan
             aeroforge.rotator1+=0.01f;
@@ -212,6 +270,10 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
             aeroforge.rotator2-=0.01f;
             if(aeroforge.rotator2 < 0.0f) aeroforge.rotator2 = ((float)Math.PI*2);
         }
+    }
+
+    public void updateForgeOnClient(AeroforgeBlockEntity f, Level level, boolean shouldCleanse){
+        if(!level.isClientSide) PacketDistributor.sendToPlayersTrackingChunk((ServerLevel) level, level.getChunkAt(f.getBlockPos()).getPos(), AeroforgeData.getDataFromForge(f, shouldCleanse));
     }
 
     @Override
@@ -280,13 +342,30 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
         this.clearContent();
     }
 
-    public void tryCraft(ServerLevel serverLevel){
+
+
+    public void tryCraft(ServerLevel serverLevel, AeroforgeBlockEntity aeroforge){
         RecipeManager recipes = serverLevel.recipeAccess();
         AeroforgeInput input = new AeroforgeInput(items.get(0), items.get(1), items.get(2), items.get(3));
         Optional<RecipeHolder<AeroforgeOneRecipe>> optional = recipes.getRecipeFor(Recipez.AEROFORGE_I_RECIPE_TYPE.get(), input, serverLevel);
         optional.map(RecipeHolder::value).ifPresent(recipe ->{
-            this.level.addFreshEntity(new ItemEntity(this.level, this.getBlockPos().getX(), this.getBlockPos().above().getY(), this.getBlockPos().getZ(), recipe.assemble(input, serverLevel.registryAccess())));
-            this.clearContent();
+            //aeroforge.level.addFreshEntity(new ItemEntity(aeroforge.level, aeroforge.getBlockPos().getX(), aeroforge.getBlockPos().above().getY(), aeroforge.getBlockPos().getZ(), recipe.assemble(input, serverLevel.registryAccess())));
+            //aeroforge.clearContent();
+            aeroforge.startCraftingProcedure(recipe.assemble(input, serverLevel.registryAccess()));
         });
+    }
+
+    public void startCraftingProcedure(ItemStack resultItem){
+        this.standby = false;
+        this.result = resultItem;
+        this.updateForgeOnClient(this, this.level, false);
+    }
+
+    public void finishCraftingProcedure(){
+        this.standby = true;
+        this.level.addFreshEntity(new ItemEntity(this.level, this.getBlockPos().getX(), this.getBlockPos().above().getY(), this.getBlockPos().getZ(), this.result));
+        this.result = ItemStack.EMPTY;
+        this.clearContent();
+        this.updateForgeOnClient(this, this.level, true);
     }
 }

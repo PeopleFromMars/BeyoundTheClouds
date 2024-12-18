@@ -133,9 +133,9 @@ public class AeroForge extends FallingBlock implements EntityBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand interactionHand, BlockHitResult hitResult) {
         if(level.getBlockEntity(pos) instanceof AeroforgeBlockEntity forge && !level.isClientSide){
-            if(forge.checkAltarValidity(level, pos) && !player.getItemInHand(interactionHand).is(Blocks.AIR.asItem())){
+            if(forge.checkAltarValidity(level, pos) && !player.getItemInHand(interactionHand).is(Blocks.AIR.asItem()) && forge.standby){
                 if(player.getItemInHand(interactionHand).is(Items.MACE)){
-                    forge.tryCraft(level.getServer().getLevel(level.dimension()));
+                    forge.tryCraft(level.getServer().getLevel(level.dimension()), forge);
                 }else if(forge.addItem(stack.getItem())){
                     if(!player.isCreative()) stack.shrink(1);
                     return InteractionResult.SUCCESS_SERVER;
@@ -153,4 +153,5 @@ public class AeroForge extends FallingBlock implements EntityBlock {
         }
         return super.playerWillDestroy(level, pos, state, player);
     }
+
 }

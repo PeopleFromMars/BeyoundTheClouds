@@ -23,6 +23,7 @@ public class Itemz {
     public static final DeferredItem<Item> AEROFORGE_EFFECT_LAYER_II = ITEMZ.registerSimpleItem("aeroforge_effect_two");
     public static final DeferredItem<Item> AEROFORGE_EFFECT_LAYER_BASE = ITEMZ.registerSimpleItem("aeroforge_effect_base");
     public static final DeferredItem<Item> AEROFORGE_EFFECT_LAYER_SELECTOR = ITEMZ.registerSimpleItem("aeroforge_effect_selector");
+    public static final DeferredItem<Item> AEROFORGE_EFFECT_LAYER_HAMMER = ITEMZ.registerSimpleItem("aeroforge_effect_hammer");
 
 
     public static final Supplier<CreativeModeTab> CLOUDREALM_TAB = CREATIVE_TAB.register("cloud_realm_tab",
