@@ -1,0 +1,15 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "net.martianz.beyondtheclouds.util.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "MixinItemRenderer"
+  ],
+  "client": [
+  ],
+  "server": [],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

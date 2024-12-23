@@ -60,6 +60,7 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
     //maths
     public static final int RECIPE_TIME_TICKS = 300; //l
     private static final float C = (float) 4 /RECIPE_TIME_TICKS;
+    public static final float ANIM_ON_TIME = 1.0f;
 
 
     //unstored values for some reason
@@ -67,6 +68,7 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
     float rotator2 = ((float)Math.PI*2);
     ItemStack result = ItemStack.EMPTY;
     int hitCount = 0;
+    float onTimer = 0;
 
     public record AeroforgeData(int x, int y, int z, Boolean standby, int craftingTimer, int itemSelector, Boolean shouldCleanse) implements CustomPacketPayload{
         public static final CustomPacketPayload.Type<AeroforgeData> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(BeyondTheClouds.MODID, "aeroforge_data"));
@@ -278,11 +280,20 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
                 }
             }
 
-            //rendering shenaniganz
-            aeroforge.rotator1+=0.01f;
-            if(aeroforge.rotator1 > (2 * Math.PI)) aeroforge.rotator1 = 0;
-            aeroforge.rotator2-=0.01f;
-            if(aeroforge.rotator2 < 0.0f) aeroforge.rotator2 = ((float)Math.PI*2);
+            if(aeroforge.hasValidAltar){
+                if(aeroforge.onTimer < 1.0f){
+                    aeroforge.onTimer+=0.01f;
+                }else{
+                    aeroforge.onTimer = 1.0f;
+                }
+                //rendering shenaniganz
+                aeroforge.rotator1+=0.01f;
+                if(aeroforge.rotator1 > (2 * Math.PI)) aeroforge.rotator1 = 0;
+                aeroforge.rotator2-=0.01f;
+                if(aeroforge.rotator2 < 0.0f) aeroforge.rotator2 = ((float)Math.PI*2);
+            }else{
+                aeroforge.onTimer = 0.0f;
+            }
         }
     }
 

@@ -2,31 +2,31 @@ package net.martianz.beyondtheclouds.block.entity.custom;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
+import net.martianz.beyondtheclouds.BeyondTheClouds;
 import net.martianz.beyondtheclouds.item.Itemz;
-import net.minecraft.Util;
-import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.client.renderer.entity.ItemRenderer;
-import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
-import net.neoforged.neoforge.client.model.data.ModelData;
-import net.neoforged.neoforge.client.model.renderable.BakedModelRenderable;
 import org.joml.Vector3f;
 
 public class AeroforgeBER implements BlockEntityRenderer<AeroforgeBlockEntity> {
     ItemRenderer itemRenderer;
+    public static final ItemStack HAMMER_STACK = new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_HAMMER.get());
 
     public AeroforgeBER(BlockEntityRendererProvider.Context context) {
         this.itemRenderer = context.getItemRenderer();
+        //this.itemRenderer2 = (ItemRenderer2) context.getItemRenderer();
     }
 
     @Override
@@ -58,7 +58,7 @@ public class AeroforgeBER implements BlockEntityRenderer<AeroforgeBlockEntity> {
             poseStack.scale(2, 2, 2);
             poseStack.mulPose(Axis.YP.rotation(aeroforge.rotator1));
             ItemStack effectBaseStack = new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_BASE.get());
-            this.itemRenderer.render(effectBaseStack, ItemDisplayContext.GROUND, false, poseStack, bufferSource, packedLight, packedOverlay, itemRenderer.getModel(effectBaseStack, aeroforge.getLevel(), null, 1));
+            renderItemWithOpacity(effectBaseStack, aeroforge.onTimer, poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
             poseStack.popPose();
 
             //level ring
@@ -74,7 +74,7 @@ public class AeroforgeBER implements BlockEntityRenderer<AeroforgeBlockEntity> {
                     effect2Stack = new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_II.get());
                     break;
             }
-            this.itemRenderer.render(effect2Stack, ItemDisplayContext.GROUND, false, poseStack, bufferSource, packedLight, packedOverlay, itemRenderer.getModel(effect2Stack, aeroforge.getLevel(), null, 1));
+            renderItemWithOpacity(effect2Stack, aeroforge.onTimer, poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
             poseStack.popPose();
 
             //contained items
@@ -168,19 +168,23 @@ public class AeroforgeBER implements BlockEntityRenderer<AeroforgeBlockEntity> {
                 double D1eased = easeInOutCirc(D1);
                 float hammerXN = (float) (D1eased * (0.1f+Math.PI/2.0f));
                 poseStack.mulPose(Axis.XN.rotation(hammerXN));
-                renderItem(Itemz.AEROFORGE_EFFECT_LAYER_HAMMER.get(), poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
-                //TODO transparency: fade in the hammer
-                //bufferSource.getBuffer(RenderType.TRANSLUCENT).setWhiteAlpha(Math.toIntExact((long) (D1*24)));
+                renderItemWithOpacity(HAMMER_STACK, (float) D1, poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
                 poseStack.popPose();
             }
         }
 
     }
 
+    public void renderItemWithOpacity(ItemStack stack, float alpha, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Level level){
+        CompoundTag tag = new CompoundTag();
+        tag.putFloat(BeyondTheClouds.MODID +"_opacity", alpha);
+        stack.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
+        this.itemRenderer.render(stack, ItemDisplayContext.GROUND, false, poseStack, bufferSource, packedLight, packedOverlay, this.itemRenderer.getModel(stack, level, null, 1));
+    }
+
     public void renderItem(Item item, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay, Level level){
         ItemStack stack = new ItemStack(item);
         this.itemRenderer.render(stack, ItemDisplayContext.GROUND, false, poseStack, bufferSource, packedLight, packedOverlay, this.itemRenderer.getModel(stack, level, null, 1));
-
     }
 
     public static double easeInExpo(double x) {
