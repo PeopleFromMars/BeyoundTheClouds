@@ -1,4 +1,4 @@
-![MultiExpansionLogo Logo](src/main/resources/beyond_the_clouds.png)
+![BTC Logo](src/main/resources/beyond_the_clouds.png)
 
 Beyond the Clouds:
 ============

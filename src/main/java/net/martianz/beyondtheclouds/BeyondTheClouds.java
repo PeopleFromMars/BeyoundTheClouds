@@ -6,11 +6,21 @@ import net.martianz.beyondtheclouds.block.entity.custom.AeroforgeBER;
 import net.martianz.beyondtheclouds.component.DataComponentz;
 import net.martianz.beyondtheclouds.item.Itemz;
 import net.martianz.beyondtheclouds.network.Networkingz;
+import net.martianz.beyondtheclouds.particle.Particlez;
+import net.martianz.beyondtheclouds.particle.custom.FadingItemParticle;
+import net.martianz.beyondtheclouds.particle.custom.FadingItemParticleOptions;
+import net.martianz.beyondtheclouds.particle.custom.FadingItemParticleProvider;
+import net.martianz.beyondtheclouds.particle.custom.FadingItemParticleType;
 import net.martianz.beyondtheclouds.recipe.Recipez;
 import net.martianz.beyondtheclouds.util.ItemPropertiez;
+import net.minecraft.client.particle.ParticleProvider;
+import net.minecraft.client.particle.SpriteSet;
+import net.minecraft.core.particles.ParticleOptions;
+import net.minecraft.core.particles.ParticleType;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
-import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -28,6 +38,9 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 
+import java.util.function.Function;
+import java.util.function.Supplier;
+
 @Mod(BeyondTheClouds.MODID)
 public class BeyondTheClouds {
 
@@ -43,6 +56,7 @@ public class BeyondTheClouds {
         Blockz.register(modEventBus);
         BlockEntitiez.register(modEventBus);
         Recipez.register(modEventBus);
+        Particlez.register(modEventBus);
 
         DataComponentz.register(modEventBus);
 
@@ -75,9 +89,15 @@ public class BeyondTheClouds {
         public static void registerEntityRenderers(EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(BlockEntitiez.AEROFORGE_BE.get(), AeroforgeBER::new);
         }
+
+        @SubscribeEvent
+        public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
+
+            event.registerSpecial(Particlez.METAL_SPARK.get(), (type, level, x, y, z, xSpeed, ySpeed, zSpeed) -> new FadingItemParticle(level, x, y, z, type.getStack(), type.getLifeTime()));
+
+        }
+
+
     }
-
-
-
 
 }

@@ -3,12 +3,18 @@ package net.martianz.beyondtheclouds.block.entity.custom;
 import io.netty.buffer.ByteBuf;
 import net.martianz.beyondtheclouds.BeyondTheClouds;
 import net.martianz.beyondtheclouds.block.entity.BlockEntitiez;
+import net.martianz.beyondtheclouds.particle.Particlez;
+import net.martianz.beyondtheclouds.particle.custom.FadingItemParticle;
+import net.martianz.beyondtheclouds.particle.custom.FadingItemParticleOptions;
+import net.martianz.beyondtheclouds.particle.custom.FadingItemParticleProvider;
 import net.martianz.beyondtheclouds.recipe.Recipez;
 import net.martianz.beyondtheclouds.recipe.custom.AeroforgeInput;
 import net.martianz.beyondtheclouds.recipe.custom.AeroforgeOneRecipe;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.particles.ParticleType;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -19,6 +25,8 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -34,6 +42,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
 import org.jetbrains.annotations.NotNull;
+import org.joml.Vector3f;
 
 import java.util.Optional;
 
@@ -57,6 +66,7 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
     float rotator1 = 0.0f;
     float rotator2 = ((float)Math.PI*2);
     ItemStack result = ItemStack.EMPTY;
+    int hitCount = 0;
 
     public record AeroforgeData(int x, int y, int z, Boolean standby, int craftingTimer, int itemSelector, Boolean shouldCleanse) implements CustomPacketPayload{
         public static final CustomPacketPayload.Type<AeroforgeData> TYPE = new CustomPacketPayload.Type<>(ResourceLocation.fromNamespaceAndPath(BeyondTheClouds.MODID, "aeroforge_data"));
@@ -247,10 +257,10 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
     public static void tick(Level level, BlockPos pos, BlockState state, BlockEntity blockEntity) {
         if(blockEntity instanceof AeroforgeBlockEntity aeroforge){
             //Crafting sequence
-
             if(!aeroforge.standby){
-                float n = (float) RECIPE_TIME_TICKS /4;
-                aeroforge.itemSelector = Math.round((float)(C*(n*Math.floor(aeroforge.craftingTimer/n))));
+                float n = (float) RECIPE_TIME_TICKS /4.0f;
+                float calc = (float)(C*(n*Math.floor(aeroforge.craftingTimer/n)));
+                aeroforge.itemSelector = Math.round(calc);
                 aeroforge.setChanged();
                 aeroforge.updateForgeOnClient(aeroforge, level, false);
 
@@ -258,18 +268,49 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
                     aeroforge.craftingTimer = 0;
                     aeroforge.itemSelector = 0;
                     aeroforge.finishCraftingProcedure();
-                    }else{
+                }else{
+                    double D1 = ((Math.sin((aeroforge.craftingTimer/(((double)RECIPE_TIME_TICKS/8)/Math.PI)) - (Math.PI/2)))*0.5f)+0.5f;
+                    if(D1>0.85d && aeroforge.hitCount == aeroforge.itemSelector){
+                        aeroforge.hitCount++;
+                        aeroforge.smashIngredient(aeroforge.itemSelector, level);
+                    }
                     aeroforge.craftingTimer++;
                 }
-
             }
 
-            //rendering shenanigan
+            //rendering shenaniganz
             aeroforge.rotator1+=0.01f;
             if(aeroforge.rotator1 > (2 * Math.PI)) aeroforge.rotator1 = 0;
             aeroforge.rotator2-=0.01f;
             if(aeroforge.rotator2 < 0.0f) aeroforge.rotator2 = ((float)Math.PI*2);
         }
+    }
+
+    public void smashIngredient(int ingredient, Level level){
+        if(!level.isClientSide){
+            Vector3f pos = new Vector3f(0.5f, 0.0f, 0.5f);
+            switch (ingredient){
+                case 0: pos = new Vector3f(4.5f, 1.0f, 0.5f); break;
+                case 1: pos = new Vector3f(-3.5f, 1.0f, 0.5f); break;
+                case 2: pos = new Vector3f(0.5f, 1.0f, 4.5f); break;
+                case 3: pos = new Vector3f(0.5f, 1.0f, -3.5f); break;
+                case 4: pos = new Vector3f(3.5f, 2.0f, -2.5f); break;
+                case 5: pos = new Vector3f(-2.5f, 2.0f, -2.5f); break;
+                case 6: pos = new Vector3f(-2.5f, 2.0f, 3.5f); break;
+                case 7: pos = new Vector3f(3.5f, 2.0f, 3.5f); break;
+            }
+            ServerLevel serverLevel = level.getServer().getLevel(level.dimension());
+            if(serverLevel != null){
+                for (int i = 0; i < 12; i++) {
+                    RandomSource rndsc = level.getRandom();
+                    double x = this.worldPosition.getX() + pos.x + (rndsc.nextFloat()*0.4);
+                    double y = this.worldPosition.getY() + (pos.y-0.5f) + (rndsc.nextFloat()*0.4);
+                    double z = this.worldPosition.getZ() + pos.z + (rndsc.nextFloat()*0.4);
+                    serverLevel.sendParticles(new FadingItemParticleOptions(this.items.get(ingredient), RECIPE_TIME_TICKS-this.craftingTimer), x, y, z, 1, 0, 0, 0, 0);
+                }
+            }
+        }
+        this.items.set(ingredient, ItemStack.EMPTY);
     }
 
     public void updateForgeOnClient(AeroforgeBlockEntity f, Level level, boolean shouldCleanse){
@@ -342,15 +383,11 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
         this.clearContent();
     }
 
-
-
     public void tryCraft(ServerLevel serverLevel, AeroforgeBlockEntity aeroforge){
         RecipeManager recipes = serverLevel.recipeAccess();
         AeroforgeInput input = new AeroforgeInput(items.get(0), items.get(1), items.get(2), items.get(3));
         Optional<RecipeHolder<AeroforgeOneRecipe>> optional = recipes.getRecipeFor(Recipez.AEROFORGE_I_RECIPE_TYPE.get(), input, serverLevel);
         optional.map(RecipeHolder::value).ifPresent(recipe ->{
-            //aeroforge.level.addFreshEntity(new ItemEntity(aeroforge.level, aeroforge.getBlockPos().getX(), aeroforge.getBlockPos().above().getY(), aeroforge.getBlockPos().getZ(), recipe.assemble(input, serverLevel.registryAccess())));
-            //aeroforge.clearContent();
             aeroforge.startCraftingProcedure(recipe.assemble(input, serverLevel.registryAccess()));
         });
     }
@@ -365,6 +402,7 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
         this.standby = true;
         this.level.addFreshEntity(new ItemEntity(this.level, this.getBlockPos().getX(), this.getBlockPos().above().getY(), this.getBlockPos().getZ(), this.result));
         this.result = ItemStack.EMPTY;
+        this.hitCount = 0;
         this.clearContent();
         this.updateForgeOnClient(this, this.level, true);
     }
