@@ -11,6 +11,7 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 public class FadingItemParticleOptions implements ParticleOptions {
     public static final MapCodec<FadingItemParticleOptions> CODEC = RecordCodecBuilder.mapCodec(inst -> inst.group(
@@ -26,7 +27,7 @@ public class FadingItemParticleOptions implements ParticleOptions {
     public int lifeTime;
 
     public FadingItemParticleOptions(ItemStack stack, int lifeTime){
-        this.stack = stack;
+        this.stack = stack.is(ItemStack.EMPTY.getItem()) ? new ItemStack(Items.BEDROCK) : stack;
         this.lifeTime = lifeTime;
     }
 

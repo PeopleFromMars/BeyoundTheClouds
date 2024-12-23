@@ -93,7 +93,7 @@ public class BeyondTheClouds {
         @SubscribeEvent
         public static void registerParticleProviders(RegisterParticleProvidersEvent event) {
 
-            event.registerSpecial(Particlez.METAL_SPARK.get(), (type, level, x, y, z, xSpeed, ySpeed, zSpeed) -> new FadingItemParticle(level, x, y, z, type.getStack(), type.getLifeTime()));
+            event.registerSpecial(Particlez.METAL_SPARK.get(), (type, level, x, y, z, xSpeed, ySpeed, zSpeed) -> new FadingItemParticle(level, x, y, z, type.getStack().is(ItemStack.EMPTY.getItem()) ? new ItemStack(Items.BEDROCK) : type.getStack(), type.getLifeTime()));
 
         }
 

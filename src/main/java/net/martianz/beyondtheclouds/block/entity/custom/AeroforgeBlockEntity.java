@@ -280,19 +280,25 @@ public class AeroforgeBlockEntity extends BlockEntity implements Container {
                 }
             }
 
-            if(aeroforge.hasValidAltar){
-                if(aeroforge.onTimer < 1.0f){
-                    aeroforge.onTimer+=0.01f;
+            //rendering shenaniganz
+            if(level.isClientSide){
+                if(aeroforge.hasValidAltar){
+                    if(aeroforge.onTimer < 1.0f){
+                        aeroforge.onTimer+=0.015f;
+                    }else{
+                        aeroforge.onTimer = 1.0f;
+                    }
+                    aeroforge.rotator1+=0.01f;
+                    if(aeroforge.rotator1 > (2 * Math.PI)) aeroforge.rotator1 = 0;
+                    aeroforge.rotator2-=0.01f;
+                    if(aeroforge.rotator2 < 0.0f) aeroforge.rotator2 = ((float)Math.PI*2);
                 }else{
-                    aeroforge.onTimer = 1.0f;
+                    if(aeroforge.onTimer > 0.0f){
+                        aeroforge.onTimer-=0.1f;
+                    }else{
+                        aeroforge.onTimer = 0.0f;
+                    }
                 }
-                //rendering shenaniganz
-                aeroforge.rotator1+=0.01f;
-                if(aeroforge.rotator1 > (2 * Math.PI)) aeroforge.rotator1 = 0;
-                aeroforge.rotator2-=0.01f;
-                if(aeroforge.rotator2 < 0.0f) aeroforge.rotator2 = ((float)Math.PI*2);
-            }else{
-                aeroforge.onTimer = 0.0f;
             }
         }
     }

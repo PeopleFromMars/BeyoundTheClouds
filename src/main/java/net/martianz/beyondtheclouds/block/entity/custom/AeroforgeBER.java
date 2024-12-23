@@ -42,6 +42,29 @@ public class AeroforgeBER implements BlockEntityRenderer<AeroforgeBlockEntity> {
 
     @Override
     public void render(AeroforgeBlockEntity aeroforge, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
+        //Base ring
+        poseStack.pushPose();
+        poseStack.translate(0.5f, 0.1f, 0.5f);
+        float scale = 2*aeroforge.onTimer;
+        poseStack.scale(scale, scale, scale);
+        poseStack.mulPose(Axis.YP.rotation(aeroforge.rotator1));
+        ItemStack effectBaseStack = new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_BASE.get());
+        renderItemWithOpacity(effectBaseStack, aeroforge.onTimer, poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
+        poseStack.popPose();
+
+        //level ring
+        poseStack.pushPose();
+        poseStack.translate(0.5f, 0.6f, 0.5f);
+        poseStack.scale(aeroforge.onTimer, aeroforge.onTimer, aeroforge.onTimer);
+        poseStack.mulPose(Axis.YP.rotation(aeroforge.rotator2));
+        new ItemStack(Blocks.AIR.asItem());
+        ItemStack effect2Stack = switch (aeroforge.altarLevel) {
+            case 2 -> new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_II.get());
+            default -> new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_I.get());
+        };
+        renderItemWithOpacity(effect2Stack, aeroforge.onTimer, poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
+        poseStack.popPose();
+
         if(aeroforge.hasValidAltar){
 
             //Carpet under anvil
@@ -50,31 +73,6 @@ public class AeroforgeBER implements BlockEntityRenderer<AeroforgeBlockEntity> {
             poseStack.translate(0.5f, -0.25f, 0.5f);
             poseStack.scale(4, 4, 4);
             this.itemRenderer.render(carpetStack, ItemDisplayContext.GROUND, false, poseStack, bufferSource, packedLight, packedOverlay, itemRenderer.getModel(carpetStack, aeroforge.getLevel(), null, 1));
-            poseStack.popPose();
-
-            //Base ring
-            poseStack.pushPose();
-            poseStack.translate(0.5f, 0.1f, 0.5f);
-            poseStack.scale(2, 2, 2);
-            poseStack.mulPose(Axis.YP.rotation(aeroforge.rotator1));
-            ItemStack effectBaseStack = new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_BASE.get());
-            renderItemWithOpacity(effectBaseStack, aeroforge.onTimer, poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
-            poseStack.popPose();
-
-            //level ring
-            poseStack.pushPose();
-            poseStack.translate(0.5f, 0.6f, 0.5f);
-            poseStack.mulPose(Axis.YP.rotation(aeroforge.rotator2));
-            ItemStack effect2Stack = new ItemStack(Blocks.AIR.asItem());
-            switch (aeroforge.altarLevel){
-                case 1:
-                    effect2Stack = new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_I.get());
-                    break;
-                case 2:
-                    effect2Stack = new ItemStack(Itemz.AEROFORGE_EFFECT_LAYER_II.get());
-                    break;
-            }
-            renderItemWithOpacity(effect2Stack, aeroforge.onTimer, poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
             poseStack.popPose();
 
             //contained items
@@ -104,60 +102,56 @@ public class AeroforgeBER implements BlockEntityRenderer<AeroforgeBlockEntity> {
             renderItem(aeroforge.getItem(7).getItem(), poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
             poseStack.popPose();
 
+            //Selector ring
+            poseStack.pushPose();
+            double lerpVal = thirtiethPowEase(aeroforge.craftingTimer/((double)AeroforgeBlockEntity.RECIPE_TIME_TICKS/4) % 1);
+            boolean shouldStopAfter4 = true;
+            if(aeroforge.altarLevel == 2) shouldStopAfter4 = false;
+            int selectorI = shouldStopAfter4 && aeroforge.itemSelector > 3 || aeroforge.standby ? 10 : aeroforge.itemSelector;
+            Vector3f selectorPos = lerpTriple(aeroforge.standby ? 0 : 1-lerpVal, getSelectorPos(selectorI+1), getSelectorPos(selectorI));
+            poseStack.translate(selectorPos.x, selectorPos.y, selectorPos.z);
+            poseStack.mulPose(Axis.YP.rotation(aeroforge.rotator1));
+            renderItem(Itemz.AEROFORGE_EFFECT_LAYER_SELECTOR.get(), poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
+            poseStack.popPose();
+
             if(!aeroforge.standby){
                 float hammerYP = 0.0f;
                 Vector3f hammerPos = new Vector3f(0.5f, 0.0f, 0.5f);
-                Vector3f selectorPos = new Vector3f(0.5f, 0.0f, 0.5f);
+
                 switch (aeroforge.itemSelector){
                     case 0:
-                        selectorPos = new Vector3f(4.5f, 1.0f, 0.5f);
                         hammerPos = new Vector3f(5.5f, 1.0f, 0.5f);
                         hammerYP = (float)Math.PI/2.0f;
-
                         break;
                     case 1:
-                        selectorPos = new Vector3f(-3.5f, 1.0f, 0.5f);
                         hammerPos = new Vector3f(-4.5f, 1.0f, 0.5f);
                         hammerYP = -1*(float)Math.PI/2.0f;
                         break;
                     case 2:
-                        selectorPos = new Vector3f(0.5f, 1.0f, 4.5f);
                         hammerPos = new Vector3f(0.5f, 1.0f, 5.5f);
                         hammerYP = 0;
                         break;
                     case 3:
-                        selectorPos = new Vector3f(0.5f, 1.0f, -3.5f);
                         hammerPos = new Vector3f(0.5f, 1.0f, -4.5f);
                         hammerYP = (float)Math.PI;
                         break;
                     case 4:
-                        selectorPos = new Vector3f(3.5f, 2.0f, -2.5f);
                         hammerPos = new Vector3f(4.5f, 2.0f, -3.5f);
                         hammerYP = 3.0f*(float)Math.PI/4.0f;
                         break;
                     case 5:
-                        selectorPos = new Vector3f(-2.5f, 2.0f, -2.5f);
                         hammerPos = new Vector3f(-3.5f, 2.0f, -3.5f);
                         hammerYP = 5.0f*(float)Math.PI/4.0f;
                         break;
                     case 6:
-                        selectorPos = new Vector3f(-2.5f, 2.0f, 3.5f);
                         hammerPos = new Vector3f(-3.5f, 2.0f, 4.5f);
                         hammerYP = -1.0f*(float)Math.PI/4.0f;
                         break;
                     case 7:
-                        selectorPos = new Vector3f(3.5f, 2.0f, 3.5f);
                         hammerPos = new Vector3f(4.5f, 2.0f, 4.5f);
                         hammerYP = (float)Math.PI/4.0f;
                         break;
                 }
-
-                //selector ring
-                poseStack.pushPose();
-                poseStack.translate(selectorPos.x, selectorPos.y, selectorPos.z);
-                poseStack.mulPose(Axis.YP.rotation(aeroforge.rotator1));
-                renderItem(Itemz.AEROFORGE_EFFECT_LAYER_SELECTOR.get(), poseStack, bufferSource, packedLight, packedOverlay, aeroforge.getLevel());
-                poseStack.popPose();
 
                 //hammer
                 poseStack.pushPose();
@@ -207,4 +201,29 @@ public class AeroforgeBER implements BlockEntityRenderer<AeroforgeBlockEntity> {
         return x * x * x * x * x;
     }
 
+    public static Vector3f getSelectorPos(int itemSelector){
+        return switch (itemSelector) {
+            case 0 -> new Vector3f(4.5f, 1.0f, 0.5f);
+            case 1 -> new Vector3f(-3.5f, 1.0f, 0.5f);
+            case 2 -> new Vector3f(0.5f, 1.0f, 4.5f);
+            case 3 -> new Vector3f(0.5f, 1.0f, -3.5f);
+            case 4 -> new Vector3f(3.5f, 2.0f, -2.5f);
+            case 5 -> new Vector3f(-2.5f, 2.0f, -2.5f);
+            case 6 -> new Vector3f(-2.5f, 2.0f, 3.5f);
+            case 7 -> new Vector3f(3.5f, 2.0f, 3.5f);
+            default -> new Vector3f(0.5f, 0.0f, 0.5f);
+        };
+    }
+
+    public static Vector3f lerpTriple(double fraction, Vector3f start, Vector3f end){
+        return new Vector3f(lerp(start.x, end.x, fraction), lerp(start.y, end.y, fraction), lerp(start.z, end.z, fraction));
+    }
+
+    public static float lerp(float a, float b, double fraction) {
+        return (float) (a * (1.0 - fraction) + (b * fraction));
+    }
+
+    public static double thirtiethPowEase(double x){
+        return Math.pow(x, 30);
+    }
 }
